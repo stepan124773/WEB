@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Отдам_Беру</h1>
+
+
 {% for item in news%}
 <div class="col-md6 border rounded">
     <h2>{{item.title}}</h2>
@@ -9,10 +10,11 @@
         {{item.name}}
     </div>
     <div>
-        {{item.name}} - - - - - {{item.city}}
+        {{item.name}} - - - - - {{item.address}}
     </div>
 </div>
-
 {% endfor %}
+
+
 
 {% endblock %}

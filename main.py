@@ -1,10 +1,10 @@
 from flask import redirect
 from flask_login import logout_user
-from data.Ad import Ad
+# from data.Ad import Ad
 from flask import Flask, render_template
 from data import db_session
 from forms.loginform import LoginForm
-from forms.user import RegisterForm
+from forms.registerform import RegisterForm
 from data.user import User
 from flask_login import LoginManager, login_user, login_required
 
@@ -22,9 +22,9 @@ def main():
 
 @app.route("/")
 def index():
-    db_sess = db_session.create_session()
-    news = db_sess.query(Ad)
-    return render_template("index.html", news=news)
+    # db_sess = db_session.create_session()
+    # news = db_sess.query(Ad)
+    return render_template("index.html")
 
 
 @login_manager.user_loader
@@ -36,6 +36,7 @@ def load_user(user_id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+    print(form.validate_on_submit())
     if form.validate_on_submit():
 
         number = form.number.raw_data[0]
@@ -64,16 +65,18 @@ def reqister():
                                    form=form,
                                    message="Пароли не совпадают")
         db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.email == form.email.data).first():
+        if db_sess.query(User).filter(User.number == form.number.data).first():
             return render_template('register.html', title='Регистрация',
                                    form=form,
                                    message="Такой пользователь уже есть")
         user = User(
             name=form.name.data,
-            email=form.email.data,
-            about=form.about.data
+            surname=form.surname.data,
+            address=form.address.data,
+            number=form.number.data
         )
         user.set_password(form.password.data)
+        user.set_modified_date()
         db_sess.add(user)
         db_sess.commit()
         return redirect('/login')
