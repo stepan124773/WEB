@@ -1,12 +1,13 @@
 from flask import redirect
 from flask_login import logout_user
-# from data.Ad import Ad
+from data.Ad import Ad
 from flask import Flask, render_template
 from data import db_session
 from forms.loginform import LoginForm
 from forms.registerform import RegisterForm
 from data.user import User
 from flask_login import LoginManager, login_user, login_required
+from forms.ads import AdForm
 
 app = Flask(__name__)
 login_manager = LoginManager()
@@ -22,9 +23,9 @@ def main():
 
 @app.route("/")
 def index():
-    # db_sess = db_session.create_session()
-    # news = db_sess.query(Ad)
-    return render_template("index.html")
+    db_sess = db_session.create_session()
+    news = db_sess.query(Ad)
+    return render_template("index.html", news=news)
 
 
 @login_manager.user_loader
@@ -36,7 +37,7 @@ def load_user(user_id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    print(form.validate_on_submit())
+
     if form.validate_on_submit():
 
         number = form.number.raw_data[0]
@@ -81,6 +82,38 @@ def reqister():
         db_sess.commit()
         return redirect('/login')
     return render_template('register.html', title='Регистрация', form=form)
+
+
+@app.route('/add_ad', methods=['GET', 'POST'])
+def add_ad():
+    form = AdForm()
+
+    if form.submit.data:
+        db_sess = db_session.create_session()
+        number = form.number.data
+        ad = Ad(
+            address=form.address.data,
+            name=form.name.data,
+            photo_name=form.photo_name.data,
+            description=form.description.data,
+            number=number,
+            user_id=db_sess.query(User).filter(User.number == number).first().id
+
+        )
+
+        db_sess.add(ad)
+        db_sess.commit()
+        return redirect('/')
+    return render_template('add_ad.html', form=form)
+
+
+@app.route('/delete_ad/<ad_id>')
+def delete_ad(ad_id):
+    db_sess = db_session.create_session()
+    ad = db_sess.query(Ad).get(ad_id)
+    db_sess.delete(ad)
+    db_sess.commit()
+    return redirect('/')
 
 
 @app.route('/logout')
