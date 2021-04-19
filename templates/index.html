@@ -9,12 +9,13 @@
     <br>
 </div>
 {%endif%}
-{% for item in news%}
+
+{% for item in ads%}
 
 <div class="col-md6 border rounded">
     {% set a = item.user_id %}
     {% set id = item.id %}
-    {% if  (current_user.id==1 or current_user.id==a) and current_user.is_authenticated  %}
+    {% if (current_user.id==1 or current_user.id==a) and current_user.is_authenticated %}
     <div>
         <a class="btn btn-primary" href="/delete_ad/{{id}}">Удалить</a>
         <a class="btn btn-success" href="/edit_job">Изменить</a>
@@ -22,15 +23,37 @@
     {%endif%}
 
     <h2>{{item.title}}</h2>
-
+    {%set f= "/static/img/" +item.id | string()+".jpg" %}
 
 
     <div>
-         {{item.address}}  {{item.description}} __ {{item.number}}
+
+        <table border="1">
+
+            <tr>
+                <th>Название</th>
+                <th>Тип</th>
+                <th>Адрес</th>
+                <th>Описание</th>
+                <th>Фото</th>
+                <th>Номер телефона</th>
+
+            </tr>
+            <tr>
+                <td>{{item.name}}</td>
+                <td>{{item.category}}</td>
+                <td> {{item.address}}</td>
+                <td>{{item.description}}</td>
+                <td><img src={{f}} alt="здесь должна была быть картинка, но не нашлась"></td>
+                <td> {{item.number}}</td>
+
+
+            </tr>
+
+        </table>
     </div>
 </div>
 {% endfor %}
-
 
 
 {% endblock %}

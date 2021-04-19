@@ -5,10 +5,9 @@ from wtforms.validators import DataRequired
 
 
 class AdForm(FlaskForm):
-    address = StringField('Адресс', validators=[DataRequired()])
+    address = StringField('Адрес', validators=[DataRequired()])
     name = StringField("Название")
-    photo_name = StringField("Фото")
     description = StringField("Описание")
     number = StringField("Номер телефона")
+    category = StringField("Категория")
     submit = SubmitField('Применить')
-

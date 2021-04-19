@@ -8,6 +8,8 @@ from forms.registerform import RegisterForm
 from data.user import User
 from flask_login import LoginManager, login_user, login_required
 from forms.ads import AdForm
+from flask import request, url_for
+from data.categories import Categories
 
 app = Flask(__name__)
 login_manager = LoginManager()
@@ -24,8 +26,9 @@ def main():
 @app.route("/")
 def index():
     db_sess = db_session.create_session()
-    news = db_sess.query(Ad)
-    return render_template("index.html", news=news)
+    ads = db_sess.query(Ad)
+    categ = db_sess.query(Categories)
+    return render_template("index.html", ads=ads, categ=categ)
 
 
 @login_manager.user_loader
@@ -87,24 +90,77 @@ def reqister():
 @app.route('/add_ad', methods=['GET', 'POST'])
 def add_ad():
     form = AdForm()
-
+    db_sess = db_session.create_session()
+    categories = db_sess.query(Categories).all()
     if form.submit.data:
-        db_sess = db_session.create_session()
+
         number = form.number.data
-        ad = Ad(
-            address=form.address.data,
-            name=form.name.data,
-            photo_name=form.photo_name.data,
-            description=form.description.data,
-            number=number,
-            user_id=db_sess.query(User).filter(User.number == number).first().id
+        if db_sess.query(User).filter(User.number == number).first():
+            print(form.category.data)
+            ad = Ad(
+                address=form.address.data,
+                name=form.name.data,
+                category=db_sess.query(Categories).filter(Categories.id == form.category.data).first().title,
+                description=form.description.data,
+                number=number,
+                user_id=db_sess.query(User).filter(User.number == number).first().id
+            )
 
-        )
+            db_sess.add(ad)
+            db_sess.commit()
+        else:
+            return render_template('add_ad.html',
+                                   form=form,
+                                   message="Вы указали не тот номер телефона")
 
-        db_sess.add(ad)
+        return redirect('/add_photo')
+    return render_template('add_ad.html', form=form, cate=categories)
+
+
+@app.route('/add_photo', methods=['POST', 'GET'])
+def add_photo():
+    db_sess = db_session.create_session()
+    ads = db_sess.query(Ad).all()
+    n = 0
+    for ad in ads:
+        if ad.id > n:
+            n = ad.id
+    ad = db_sess.query(Ad).filter(Ad.id == n).first()
+
+    if request.method == 'GET':
+
+        return f'''<!doctype html>
+                        <html lang="en">
+                          <head>
+                            <meta charset="utf-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+                            <link rel="stylesheet"
+                            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+                            integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+                            crossorigin="anonymous">
+                            <link rel="stylesheet" type="text/css" href="{url_for('static', filename='css/style.css')}" />
+                            <title>Отбор астронавтов</title>
+                          </head>
+                          <body>
+                            <h1>А теперь выберите фото вашей вещи</h1>
+                            <form method="post" enctype="multipart/form-data">
+                               <div class="form-group">
+                                    <label for="photo">Выберите фото</label>
+                                    <input type="file" class="form-control-file" id="photo" name="file">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Отправить</button>
+                            </form>
+                          </body>
+                        </html>'''
+    elif request.method == 'POST':
+
+        f = request.files['file']
+        from PIL import Image
+        im = Image.open(f).resize((300, 300))
+        im.save(f'static/img/{str(ad.id)}.jpg')
+        ad.photo_name = str(ad.id)
         db_sess.commit()
         return redirect('/')
-    return render_template('add_ad.html', form=form)
 
 
 @app.route('/delete_ad/<ad_id>')
@@ -114,6 +170,47 @@ def delete_ad(ad_id):
     db_sess.delete(ad)
     db_sess.commit()
     return redirect('/')
+
+
+@app.route('/edit_ad', methods=['GET', 'POST'])
+def dep_ad():
+    form = AdForm()
+
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        ad = db_sess.query(User).filter(User.number == number).first()
+        if ad:
+
+            form.title.data = dep.title
+            form.chief.data = dep.chief
+            form.members.data = dep.members
+            form.email.data = dep.email
+
+
+        else:
+            abort(404)
+
+    if form.submit.data:
+
+        db_sess = db_session.create_session()
+        dep = db_sess.query(Department).filter(Department.chief == 1 or Department.chief == current_user.id
+                                               ).first()
+
+        if dep:
+            dep.title = form.title.data
+            dep.chief = form.chief.data
+            dep.members = form.members.data
+            dep.email = form.email.data
+
+            db_sess.commit()
+            return redirect('/')
+        else:
+            abort(404)
+
+    return render_template('dep.html',
+                           title='Редактирование работы',
+                           form=form
+                           )
 
 
 @app.route('/logout')

@@ -31,15 +31,7 @@
     </div>
     {% endfor %}
     </p>
-    <p>
-        {{ form.photo_name.label }}<br>
-        {{ form.photo_name(class="form-control") }}<br>
-        {% for error in form.photo_name.errors %}
-    <div class="alert alert-danger" role="alert">
-        {{ error }}
-    </div>
-    {% endfor %}
-    </p>
+
     <p>
         {{ form.description.label }}<br>
         {{ form.description(class="form-control") }}<br>
@@ -49,6 +41,15 @@
     </div>
     {% endfor %}
     </p>
+    Выберите категорию ващей вещи
+    <p><select name="category" size="3" multiple>
+        {%for el in cate%}
+        <option value={{el.id}}>{{el.title}}</option>
+
+        {% endfor %}
+    </select>
+        <!--            <input type="submit" value="Отправить"></p>-->
+
     <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
     <div>{{ message }}</div>
 </form>
