@@ -17,7 +17,7 @@ def get_users():
     return jsonify(
         {
             'users':
-                [item.to_dict(only=('id', 'name', 'surname', 'number',
+                [item.to_dict(only=('id', 'name', 'surname', 'login',
                                     'address',
                                     ))
                  for item in users]
@@ -35,7 +35,7 @@ def get_user(id):
     return jsonify(
         {
             'users':
-                users.to_dict(only=('id', 'name', 'surname', 'number',
+                users.to_dict(only=('id', 'name', 'surname', 'login',
                                     'address',
                                     ))
 
@@ -48,7 +48,7 @@ def create_users():
     if not request.json:
         return jsonify({'error': 'Empty request'})
     elif not all(key in request.json for key in
-                 ['id', 'name', 'surname', 'number',
+                 ['id', 'name', 'surname', 'login',
                   'address']):
         return jsonify({'error': 'Bad request'})
     db_sess = db_session.create_session()
@@ -56,7 +56,7 @@ def create_users():
         id=request.json['id'],
         name=request.json['name'],
         surname=request.json['surname'],
-        number=request.json['number'],
+        login=request.json['login'],
 
         address=request.json['address'],
 

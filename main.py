@@ -12,15 +12,18 @@ from data.categories import Categories
 from forms.typeform import TypeForm
 import flask_login
 from way import way
-from data import db_session, ads_api,users_api
+from data import db_session, ads_api, users_api
 from flask_restful import Api
-
+from geocoder import geocode
 
 app = Flask(__name__)
 login_manager = LoginManager()
 login_manager.init_app(app)
 api = Api(app)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+
+app.config["CACHE_TYPE"] = "null"
+
 
 
 def main():
@@ -62,10 +65,10 @@ def login():
 
     if form.validate_on_submit():
 
-        number = form.number.raw_data[0]
+        login = form.login.raw_data[0]
 
         db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.number == number).first()
+        user = db_sess.query(User).filter(User.login == login).first()
 
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
@@ -88,7 +91,7 @@ def reqister():
                                    form=form,
                                    message="Пароли не совпадают")
         db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.number == form.number.data).first():
+        if db_sess.query(User).filter(User.login == form.login.data).first():
             return render_template('register.html', title='Регистрация',
                                    form=form,
                                    message="Такой пользователь уже есть")
@@ -96,7 +99,7 @@ def reqister():
             name=form.name.data,
             surname=form.surname.data,
             address=form.address.data,
-            number=form.number.data
+            login=form.login.data
         )
         user.set_password(form.password.data)
         user.set_modified_date()
@@ -111,26 +114,23 @@ def add_ad():
     form = AdForm()
     db_sess = db_session.create_session()
     categories = db_sess.query(Categories).all()
+
     if form.submit.data:
-
-        number = form.number.data
-        if db_sess.query(User).filter(User.number == number).first():
-
+        print(form.category)
+        if geocode(form.address.data):
             ad = Ad(
                 address=form.address.data,
                 name=form.name.data,
                 category=db_sess.query(Categories).filter(Categories.id == form.category.data).first().title,
                 description=form.description.data,
-                number=number,
-                user_id=db_sess.query(User).filter(User.number == number).first().id
+                number=form.number.data,
+                user_id=db_sess.query(User).filter(User.login == flask_login.current_user.login).first().id
             )
-
-            db_sess.add(ad)
-            db_sess.commit()
         else:
-            return render_template('add_ad.html',
-                                   form=form,
-                                   message="Вы указали не тот номер телефона")
+            return render_template('add_ad.html', form=form, cate=categories, m="нет такого города")
+
+        db_sess.add(ad)
+        db_sess.commit()
 
         return redirect('/add_photo')
     return render_template('add_ad.html', form=form, cate=categories)
@@ -203,7 +203,7 @@ def dep_ad(id):
             form.name.data = ad.name
             form.category.data = ad.category
             form.description.data = ad.description
-            form.number.data = "Если хотите сменить номер, то зарегистрируйтесь заново"
+            form.number.data = ad.number
 
     if form.submit.data:
 

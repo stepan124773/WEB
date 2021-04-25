@@ -98,3 +98,4 @@ def get_nearest_object(point, kind):
     # Получаем первый топоним из ответа геокодера.
     features = json_response["response"]["GeoObjectCollection"]["featureMember"]
     return features[0]["GeoObject"]["name"] if features else None
+print(geocode('dsjdsjjdskdjsjds'))

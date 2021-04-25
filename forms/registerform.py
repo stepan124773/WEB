@@ -10,6 +10,6 @@ class RegisterForm(FlaskForm):
     name = StringField('Имя', validators=[DataRequired()])
     surname = StringField('Фамилия', validators=[DataRequired()])
     address = StringField('Адрес', validators=[DataRequired()])
-    number = StringField('Номер телефона', validators=[DataRequired()])
+    login = StringField('Логин', validators=[DataRequired()])
 
     submit = SubmitField('Зарегистрироваться')

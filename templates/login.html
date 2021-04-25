@@ -5,9 +5,9 @@
 <form action="" method="post">
     {{ form.hidden_tag() }}
     <p>
-        {{ form.number.label }}<br>
-        {{ form.number(class="form-control") }}<br>
-        {% for error in form.number.errors %}
+        {{ form.login.label }}<br>
+        {{ form.login(class="form-control") }}<br>
+        {% for error in form.login.errors %}
     <div class="alert alert-danger" role="alert">
         {{ error }}
     </div>

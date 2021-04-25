@@ -8,6 +8,6 @@ from wtforms.validators import DataRequired
 
 class LoginForm(FlaskForm):
     password = PasswordField('Пароль', validators=[DataRequired()])
-    number = TextAreaField("Телефон", validators=[DataRequired()])
+    login = TextAreaField("Логин", validators=[DataRequired()])
     remember_me = BooleanField('Запомнить меня')
     submit = SubmitField('Войти')
