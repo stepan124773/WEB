@@ -19,6 +19,7 @@ class Ad(SqlAlchemyBase, UserMixin, SerializerMixin):
     description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     number = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     category = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    photo =sqlalchemy.Column(sqlalchemy.String, nullable=True)
     user_id = sqlalchemy.Column(sqlalchemy.Integer,
                                 sqlalchemy.ForeignKey("users.id"))
     user = orm.relation('User')

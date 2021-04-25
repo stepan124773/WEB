@@ -25,7 +25,6 @@ app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 app.config["CACHE_TYPE"] = "null"
 
 
-
 def main():
     db_session.global_init("db/ads.db")
     app.register_blueprint(ads_api.blueprint)
@@ -116,9 +115,13 @@ def add_ad():
     categories = db_sess.query(Categories).all()
 
     if form.submit.data:
-        print(form.category)
+        from random import choice
+        n=''
+        for _ in range(100):
+            n+=choice('1234567890')
         if geocode(form.address.data):
             ad = Ad(
+                photo=n,
                 address=form.address.data,
                 name=form.name.data,
                 category=db_sess.query(Categories).filter(Categories.id == form.category.data).first().title,
@@ -132,19 +135,15 @@ def add_ad():
         db_sess.add(ad)
         db_sess.commit()
 
-        return redirect('/add_photo')
+        return redirect(f'/add_photo/{ad.id}/{n}')
     return render_template('add_ad.html', form=form, cate=categories)
 
 
-@app.route('/add_photo', methods=['POST', 'GET'])
-def add_photo():
+@app.route('/add_photo/<id>/<n>', methods=['POST', 'GET'])
+def add_photo(id,n):
     db_sess = db_session.create_session()
-    ads = db_sess.query(Ad).all()
-    n = 0
-    for ad in ads:
-        if ad.id > n:
-            n = ad.id
-    ad = db_sess.query(Ad).filter(Ad.id == n).first()
+
+    ad = db_sess.query(Ad).filter(Ad.id == id).first()
 
     if request.method == 'GET':
 
@@ -174,9 +173,10 @@ def add_photo():
     elif request.method == 'POST':
 
         f = request.files['file']
+
         from PIL import Image
         im = Image.open(f).resize((300, 300))
-        im.save(f'static/img/{str(ad.id)}.jpg')
+        im.save(f'static/img/{n}.jpg')
         ad.photo_name = str(ad.id)
         db_sess.commit()
         return redirect('/')
@@ -236,3 +236,4 @@ def logout():
 
 if __name__ == '__main__':
     main()
+
