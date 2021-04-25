@@ -8,17 +8,35 @@
     <a class="btn btn-primary " href="/add_ad">добавить</a>
     <br>
 </div>
-{%endif%}
 
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+
+
+    <p><select name="category" size="3" multiple>
+        {%for el in categ%}
+        <option value={{el.id}}>{{el.title}}</option>
+
+        {% endfor %}
+        <option value="999">Любая категория</option>
+    </select>
+
+
+    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    <div>{{ message }}</div>
+</form>
+<h5>Выбранная категория: {{cat}}</h5>
 {% for item in ads%}
-
+{%if item.category == cat or cat=="Любая категория"%}
 <div class="col-md6 border rounded">
+
     {% set a = item.user_id %}
     {% set id = item.id %}
     {% if (current_user.id==1 or current_user.id==a) and current_user.is_authenticated %}
     <div>
+        {%set qwer="/edit_ad"+"/" + item.id | string()%}
         <a class="btn btn-primary" href="/delete_ad/{{id}}">Удалить</a>
-        <a class="btn btn-success" href="/edit_job">Изменить</a>
+        <a class="btn btn-success" href={{qwer}}>Изменить</a>
     </div>
     {%endif%}
 
@@ -53,7 +71,8 @@
         </table>
     </div>
 </div>
+{%endif%}
 {% endfor %}
-
+{%endif%}
 
 {% endblock %}

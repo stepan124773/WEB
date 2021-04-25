@@ -10,6 +10,9 @@ from flask_login import LoginManager, login_user, login_required
 from forms.ads import AdForm
 from flask import request, url_for
 from data.categories import Categories
+from forms.typeform import TypeForm
+import flask_login
+from way import way
 
 app = Flask(__name__)
 login_manager = LoginManager()
@@ -23,12 +26,24 @@ def main():
     app.run()
 
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 def index():
+    form = TypeForm()
     db_sess = db_session.create_session()
+
     ads = db_sess.query(Ad)
+
+    if flask_login.current_user.is_authenticated:
+        ads = sorted(ads, key=lambda x: way(x.address, flask_login.current_user.address))
+
     categ = db_sess.query(Categories)
-    return render_template("index.html", ads=ads, categ=categ)
+    if form.submit.data:
+        if form.category.data:
+            if form.category.data == "999":
+                return render_template("index.html", ads=ads, categ=categ, form=form, cat="Любая категория")
+            cat = db_sess.query(Categories).filter(Categories.id == int(form.category.data)).first().title
+            return render_template("index.html", ads=ads, categ=categ, form=form, cat=cat)
+    return render_template("index.html", ads=ads, categ=categ, form=form, cat="Любая категория")
 
 
 @login_manager.user_loader
@@ -96,7 +111,7 @@ def add_ad():
 
         number = form.number.data
         if db_sess.query(User).filter(User.number == number).first():
-            print(form.category.data)
+
             ad = Ad(
                 address=form.address.data,
                 name=form.name.data,
@@ -172,44 +187,39 @@ def delete_ad(ad_id):
     return redirect('/')
 
 
-@app.route('/edit_ad', methods=['GET', 'POST'])
-def dep_ad():
+@app.route('/edit_ad/<id>', methods=['GET', 'POST'])
+def dep_ad(id):
     form = AdForm()
 
     if request.method == "GET":
         db_sess = db_session.create_session()
-        ad = db_sess.query(User).filter(User.number == number).first()
+        ad = db_sess.query(Ad).filter(Ad.id == id).first()
         if ad:
-
-            form.title.data = dep.title
-            form.chief.data = dep.chief
-            form.members.data = dep.members
-            form.email.data = dep.email
-
-
-        else:
-            abort(404)
+            form.address.data = ad.address
+            form.name.data = ad.name
+            form.category.data = ad.category
+            form.description.data = ad.description
+            form.number.data = "Если хотите сменить номер, то зарегистрируйтесь заново"
 
     if form.submit.data:
 
         db_sess = db_session.create_session()
-        dep = db_sess.query(Department).filter(Department.chief == 1 or Department.chief == current_user.id
-                                               ).first()
+        ad = db_sess.query(Ad).filter(Ad.id == id).first()
 
-        if dep:
-            dep.title = form.title.data
-            dep.chief = form.chief.data
-            dep.members = form.members.data
-            dep.email = form.email.data
+        if ad:
+            ad.name = form.name.data
+            ad.address = form.address.data
+            ad.category = db_sess.query(Categories).filter(Categories.id == form.category.data).first().title
+            ad.description = form.description.data
 
             db_sess.commit()
-            return redirect('/')
-        else:
-            abort(404)
 
-    return render_template('dep.html',
+            return redirect('/')
+
+    categ = db_sess.query(Categories)
+    return render_template('add_ad.html',
                            title='Редактирование работы',
-                           form=form
+                           form=form, cate=categ
                            )
 
 
