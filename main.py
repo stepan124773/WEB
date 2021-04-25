@@ -2,7 +2,6 @@ from flask import redirect
 from flask_login import logout_user
 from data.Ad import Ad
 from flask import Flask, render_template
-from data import db_session
 from forms.loginform import LoginForm
 from forms.registerform import RegisterForm
 from data.user import User
@@ -13,16 +12,21 @@ from data.categories import Categories
 from forms.typeform import TypeForm
 import flask_login
 from way import way
+from data import db_session, ads_api,users_api
+from flask_restful import Api
+
 
 app = Flask(__name__)
 login_manager = LoginManager()
 login_manager.init_app(app)
-
+api = Api(app)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 
 
 def main():
     db_session.global_init("db/ads.db")
+    app.register_blueprint(ads_api.blueprint)
+    app.register_blueprint(users_api.blueprint)
     app.run()
 
 

@@ -1,10 +1,14 @@
+
+from sqlalchemy import orm
 import sqlalchemy
 from .db_session import SqlAlchemyBase
 from flask_login import UserMixin
-from sqlalchemy import orm
 
 
-class Ad(SqlAlchemyBase, UserMixin):
+from sqlalchemy_serializer import SerializerMixin
+
+
+class Ad(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'Ads'
 
     id = sqlalchemy.Column(sqlalchemy.Integer,
