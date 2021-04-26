@@ -116,9 +116,9 @@ def add_ad():
 
     if form.submit.data:
         from random import choice
-        n=''
+        n = ''
         for _ in range(100):
-            n+=choice('1234567890')
+            n += choice('1234567890')
         if geocode(form.address.data):
             ad = Ad(
                 photo=n,
@@ -140,7 +140,7 @@ def add_ad():
 
 
 @app.route('/add_photo/<id>/<n>', methods=['POST', 'GET'])
-def add_photo(id,n):
+def add_photo(id, n):
     db_sess = db_session.create_session()
 
     ad = db_sess.query(Ad).filter(Ad.id == id).first()
@@ -236,4 +236,3 @@ def logout():
 
 if __name__ == '__main__':
     main()
-
